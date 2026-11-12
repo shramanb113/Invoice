@@ -73,7 +73,16 @@ const nextConfig: NextConfig = {
       { source: "/demos/:path*", headers: framedFileHeaders },
     ];
   },
+  // pdfjs-dist loads @napi-rs/canvas (PDF page rendering for vision/OCR) with a dynamic require that file
+  // tracing cannot see, so on Vercel the module and its Linux binary were missing. Include them for the
+  // routes that read PDFs. The globs match nothing on machines without the Linux binary (e.g. Windows dev).
+  outputFileTracingIncludes: {
+    "/api/invoices/process": ["./node_modules/@napi-rs/canvas/**/*", "./node_modules/@napi-rs/canvas-linux-x64-gnu/**/*"],
+    "/api/inngest": ["./node_modules/@napi-rs/canvas/**/*", "./node_modules/@napi-rs/canvas-linux-x64-gnu/**/*"],
+    "/api/intake/email": ["./node_modules/@napi-rs/canvas/**/*", "./node_modules/@napi-rs/canvas-linux-x64-gnu/**/*"],
+  },
   serverExternalPackages: [
+    "@napi-rs/canvas",
     "@mastra/core",
     "@mastra/loggers",
     "tesseract.js",
